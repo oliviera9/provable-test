@@ -25,14 +25,14 @@ class Transfers(Resource):
         ts_from = args['from']
         ts_to = args['to']
         if ts_from >= ts_to or not utils.is_address(address):
-            return make_response(jsonify({"error": "invalid argument"}), 400)
+            return make_response(jsonify({"message": {"from":"invalid argument"}}), 400)
         try:
             logs = eth_client.get_event_logs(ts_from, ts_to, address)
             return make_response(jsonify([log.get_dict() for log in logs]), 200)
         except InvalidApiKeyException:
-            return make_response(jsonify({"error": "invalid apikey"}), 403)
+            return make_response(jsonify({"message": {"from":"invalid apikey"}}), 403)
         except FetchDataException:
-            return make_response(jsonify({"error": "generic error"}), 500)
+            return make_response(jsonify({"message": {"from":"generic error"}}), 500)
 
 
 if __name__ == '__main__':
