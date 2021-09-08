@@ -3,6 +3,8 @@ from flask import Flask, jsonify, make_response
 from flask_restful import Resource, Api, reqparse
 import argparse
 import os
+from exceptions import *
+import utils
 
 app = Flask(__name__)
 
@@ -19,8 +21,15 @@ class Transfers(Resource):
         address = args['address']
         ts_from = args['from']
         ts_to = args['to']
-        txns = eth_client.get_event_logs(ts_from, ts_to, address)
-        return make_response(jsonify([t.get_dict() for t in txns]), 200)
+        if ts_from >= ts_to or not utils.is_address(address):
+            return make_response(jsonify({"error": "invalid argument"}), 400)
+        try:
+            logs = eth_client.get_event_logs(ts_from, ts_to, address)
+            return make_response(jsonify([log.get_dict() for log in logs]), 200)
+        except InvalidApiKeyException:
+            return make_response(jsonify({"error": "invalid apikey"}), 403)
+        except FetchDataException:
+            return make_response(jsonify({"error": "generic error"}), 500)
 
 
 api = Api(app)

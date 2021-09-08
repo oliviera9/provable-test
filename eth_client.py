@@ -3,7 +3,7 @@ import os
 import requests
 import json
 from eth_objects import Block, Transaction, EventLog
-from exceptions import FetchDataException
+from exceptions import *
 
 GETBLOCKIO_KEY = None
 
@@ -16,6 +16,8 @@ def getblock_request(data):
         }
         response = requests.post('https://eth.getblock.io/', headers=headers, data=data)
         if response.status_code != 200:
+            if response.status_code == 403 and response.text == "Invalid apikey":
+                raise InvalidApiKeyException
             raise FetchDataException("Non-valid status code %d" % response.status_code)
         return json.loads(response.text)["result"]
     except requests.exceptions.RequestException as ex:
