@@ -1,5 +1,6 @@
 import eth_client
 from flask import Flask, jsonify, make_response
+from flask_caching import Cache
 from flask_restful import Resource, Api, reqparse
 import argparse
 import os
@@ -7,9 +8,11 @@ from exceptions import *
 import utils
 
 app = Flask(__name__)
+cache = Cache(app, config={'CACHE_TYPE': 'simple'})
 
 
 class Transfers(Resource):
+    @cache.cached(timeout=120, query_string=True)
     def post(self):
         parser = reqparse.RequestParser()  # initialize
         parser.add_argument('address', required=True)  # add args
@@ -32,9 +35,6 @@ class Transfers(Resource):
             return make_response(jsonify({"error": "generic error"}), 500)
 
 
-api = Api(app)
-api.add_resource(Transfers, '/transfers')
-
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--key", help="getblock.io API key")
@@ -47,5 +47,6 @@ if __name__ == '__main__':
     else:
         print("Getblock.io API key not found")
         exit(1)
-
+    api = Api(app)
+    api.add_resource(Transfers, '/transfers')
     app.run(port=args.port)
