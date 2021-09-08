@@ -29,6 +29,7 @@ api.add_resource(Transfers, '/transfers')
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--key", help="getblock.io API key")
+    parser.add_argument("--port", type=int, help="Webserver port", default=3000)
     args = parser.parse_args()
     if args.key:
         eth_client.GETBLOCKIO_KEY = args.key
@@ -38,4 +39,4 @@ if __name__ == '__main__':
         print("Getblock.io API key not found")
         exit(1)
 
-    app.run(port=3000)
+    app.run(port=args.port)
